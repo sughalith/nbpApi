@@ -1,8 +1,11 @@
-package pl.arek.nbpapi.Service;
+package pl.arek.nbpapi.service;
 
 import com.google.gson.Gson;
 import org.springframework.stereotype.Service;
-import pl.arek.nbpapi.Model.Nbp;
+import pl.arek.nbpapi.model.ApiSearchData;
+import pl.arek.nbpapi.model.Nbp;
+import pl.arek.nbpapi.model.NbpDetails;
+import pl.arek.nbpapi.model.Rate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,20 +13,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class HomeService {
 
-    public Nbp getActualRate(String currency, Date startDate, Date endDate) {
+    public Nbp getActualRate(ApiSearchData apiSearchData) {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append("http://api.nbp.pl/api/exchangerates/rates/a/")
-                    .append(currency)
+                    .append(apiSearchData.getCode())
                     .append("/")
-                    .append(startDate)
+                    .append(dateFormatter(apiSearchData.getStartDate()))
                     .append("/")
-                    .append(endDate)
+                    .append(dateFormatter(apiSearchData.getEndDate()))
                     .append("/");
             HttpURLConnection connection = (HttpURLConnection) new URL(sb.toString()).openConnection();
             connection.setRequestProperty("Content-Type", "application/json");
@@ -60,5 +65,34 @@ public class HomeService {
             }
         }
         return response.toString();
+    }
+
+    private String dateFormatter(Date date){
+        return new SimpleDateFormat("yyyy-MM-dd").format(date);
+    }
+
+    public NbpDetails calculateCurrencyDetails(Nbp nbp){
+        if(nbp.getRates() == null)
+            return new NbpDetails();
+        NbpDetails nbpDetails = new NbpDetails();
+        double tempValue = 0;
+        double avgValue;
+        int counter = 0;
+        for(Rate rate : nbp.getRates()){
+            tempValue += rate.getMid();
+            counter ++;
+        }
+        avgValue = tempValue/counter;
+        nbpDetails.setAvgCurrency(avgValue);
+        nbpDetails.setDeviation(Math.sqrt(calculateVariance(nbp.getRates(), counter, avgValue)));
+        return nbpDetails;
+    }
+
+    public double calculateVariance(List<Rate> rates, int counter, double avgValue){
+        double tempValue = 0;
+        for(Rate rate : rates){
+            tempValue += Math.pow(rate.getMid() - avgValue, 2);
+        }
+        return tempValue/counter;
     }
 }
