@@ -4,7 +4,7 @@
 >
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Nbp api</title>
 </head>
 <body>
 <div class="container" th:fragment="content">
@@ -13,9 +13,64 @@
             <div class="col-lg-6">
                 <h1 class="page-header">Panel klienta NBP</h1>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="panel-body">
+                    <form autocomplete="off" th:action="@{/}"
+                          th:object="${search_view}" method="post" class="form-horizontal" role="form">
 
-            <div class="col-lg-6">
-                <h1 >Wybór dat</h1>
+                        <select th:field="*{code}">
+                            <option th:value="'usd'" th:text="Dolar"></option>
+                            <option th:value="'eur'" th:text="Euro"></option>
+                            <option th:value="'gbp'" th:text="Funt"></option>
+                            <option th:value="'chf'" th:text="Frank"></option>
+                        </select>
+
+
+                        <div class="form-group">
+                            <p>Wprowadz początek okresu</p>
+                            <input type="date" th:field="*{startDate}"
+                                   class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <p>Wprowadz koniec okresu</p>
+                            <input type="date" th:field="*{endDate}"
+                                   class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">Wyszukaj</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div th:if="${not #lists.isEmpty(result_list)}">
+                <table class="table table-striped">
+                    <tr>
+                        <th>Wartość średnia</th>
+                        <th>Odchylenie standardowe</th>
+
+                    </tr>
+                    <tr>
+                        <td th:text="${#numbers.formatDecimal(details_list.avgCurrency, 1, 'COMMA', 10, 'POINT')}"></td>
+                        <td th:text="${#numbers.formatDecimal(details_list.deviation, 1, 'COMMA', 5, 'POINT')}"></td>
+                    </tr>
+                </table>
+                <table class="table table-striped">
+                    <tr>
+                        <th>Kurs</th>
+                        <th>Data kursu</th>
+
+                    </tr>
+                    <tr th:each="count : ${result_list.rates}">
+                        <td th:text="${count.mid}"></td>
+                        <td th:text="${count.effectiveDate}"></td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
