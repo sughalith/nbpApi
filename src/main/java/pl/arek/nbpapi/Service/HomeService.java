@@ -17,24 +17,26 @@ public class HomeService {
 
     public Nbp getActualRate(String currency, Date startDate, Date endDate) {
         try {
-        HttpURLConnection connection = (HttpURLConnection) new URL("http://api.nbp.pl/api/exchangerates/rates/a/eur/2012-01-20/2012-01-31/").openConnection();
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestMethod("GET");
-        String jsonString = readStream(connection.getInputStream());
+            StringBuilder sb = new StringBuilder();
+            sb.append("http://api.nbp.pl/api/exchangerates/rates/a/")
+                    .append(currency)
+                    .append("/")
+                    .append(startDate)
+                    .append("/")
+                    .append(endDate)
+                    .append("/");
+            HttpURLConnection connection = (HttpURLConnection) new URL(sb.toString()).openConnection();
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestMethod("GET");
+            String jsonString = readStream(connection.getInputStream());
 
-         Gson gson = new Gson();
+            Gson gson = new Gson();
 
-         Nbp currencyResponse = gson.fromJson(jsonString, Nbp.class);
-         return currencyResponse;
-        }
-        catch (Exception e){
+            Nbp currencyResponse = gson.fromJson(jsonString, Nbp.class);
+            return currencyResponse;
+        } catch (Exception e) {
             return new Nbp();
         }
-
-
-
-//
-
     }
 
     private String readStream(InputStream in) {
@@ -59,6 +61,4 @@ public class HomeService {
         }
         return response.toString();
     }
-
-
 }
