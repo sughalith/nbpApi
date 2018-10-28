@@ -13,7 +13,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -88,11 +91,33 @@ public class HomeService {
         return nbpDetails;
     }
 
-    public double calculateVariance(List<Rate> rates, int counter, double avgValue){
+    private double calculateVariance(List<Rate> rates, int counter, double avgValue){
         double tempValue = 0;
         for(Rate rate : rates){
             tempValue += Math.pow(rate.getMid() - avgValue, 2);
         }
         return tempValue/counter;
+    }
+
+    public List<Nbp> findCurrency(String code, String startDate, String endDate){
+
+        ApiSearchData searchData = new ApiSearchData();
+        List<Nbp> nbpList = new ArrayList<>();
+        searchData.setCode(code);
+        searchData.setStartDate(stringToDateFormatter(startDate));
+        searchData.setEndDate(stringToDateFormatter(endDate));
+        nbpList.add(getActualRate(searchData));
+
+        return nbpList;
+    }
+
+    private Date stringToDateFormatter(String dateString){
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            return format.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
